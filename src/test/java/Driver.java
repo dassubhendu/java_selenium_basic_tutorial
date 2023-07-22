@@ -5,5 +5,11 @@ public class Driver {
         MethodRepository mr = new MethodRepository();
 
         mr.browserApplicationLaunch("firefox", "http://www.automationpractice.pl/index.php?controller=my-account");
+        /* mr.loginApplicationAndVerifyValidLogin(); */
+        /* mr.sortingSelectionOfDresses(); */
+
+        Thread.sleep(8000);
+        mr.closeBrowser();
+
     }
 }
