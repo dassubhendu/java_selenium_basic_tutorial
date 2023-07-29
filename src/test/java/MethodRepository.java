@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -271,7 +272,37 @@ public class MethodRepository {
 
     /**
      * Mouse handling using Action Class
+     * Login with mouse click on the login button
      */
+    public void actionClassMouseHandlingLogin(){
+        try {
+            WebElement btnSignInNavBar = driver.findElement(By.xpath("//a[@class='login']"));
+            btnSignInNavBar.click();
+            Thread.sleep(5000);
+            WebElement txtEmailAddress = driver.findElement(By.id("email"));
+            txtEmailAddress.sendKeys("subhendudas8014@gmail.com");
+            WebElement txtPassword = driver.findElement(By.id("passwd"));
+            txtPassword.sendKeys("Gmail@123456");
+            WebElement btnSignIn = driver.findElement(By.id("SubmitLogin"));
+            /* btnSignIn.click(); */
+            Actions actions = new Actions(driver);
+            actions.click(btnSignIn).build().perform();
+            Thread.sleep(4000);
+
+            String expPageTitle = "My account - My Shop";
+            String actPageTitle = driver.getTitle();
+
+            if(expPageTitle.equals(actPageTitle)){
+                System.out.println("Login is successful with valid credentials");
+            }else{
+                System.out.println("Login is unsuccessful with valid credentials");
+            }
+
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
 
     /**
      * Multiple window handling
@@ -304,6 +335,12 @@ public class MethodRepository {
     /**
      * Use of javascript-executor if send keys method will not work
      */
+
+    /**
+     * Popup handling
+     */
+
+
 
 
     public void closeBrowser(){
