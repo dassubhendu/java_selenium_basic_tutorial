@@ -1,8 +1,10 @@
+import com.graphbuilder.math.ExpressionParseException;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
@@ -12,12 +14,12 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.Properties;
 import java.awt.Robot;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class MethodRepository {
@@ -306,13 +308,104 @@ public class MethodRepository {
 
     /**
      * Multiple window handling
-     * https://toolsqa.com/selenium-webdriver/window-handle-in-selenium/
      */
+    public void multipleWindowHandling() {
+        try {
+            WebDriverManager.firefoxdriver().setup();
+            driver = new FirefoxDriver();
+            driver.manage().window().maximize();
+            driver.get("https://demoqa.com/browser-windows");
+            driver.manage().window().maximize();
+            driver.findElement(By.id("windowButton")).click();
+
+            String mainWindowHandle = driver.getWindowHandle();
+            Set<String> allWindowHandles = driver.getWindowHandles();
+            Iterator<String> iterator = allWindowHandles.iterator();
+
+            // Here we will check if child window has other child windows and will fetch the heading of the child window
+            while (iterator.hasNext()) {
+                String ChildWindow = iterator.next();
+                if (!mainWindowHandle.equalsIgnoreCase(ChildWindow)) {
+                    driver.switchTo().window(ChildWindow);
+                    WebElement text = driver.findElement(By.id("sampleHeading"));
+                    System.out.println("Heading of child window is " + text.getText());
+                }
+            }
+
+            // Switching to Parent window that is Main Window.
+            driver.switchTo().window(mainWindowHandle);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Multiple tab handling
-     * https://toolsqa.com/selenium-webdriver/window-handle-in-selenium/
      */
+    public void multipleTabHandling(){
+        try {
+            WebDriverManager.firefoxdriver().setup();
+            driver = new FirefoxDriver();
+            driver.manage().window().maximize();
+            driver.get("https://demoqa.com/browser-windows");
+            driver.manage().window().maximize();
+            driver.findElement(By.id("tabButton")).click();
+
+            String mainWindowHandle = driver.getWindowHandle();
+            Set<String> allWindowHandles = driver.getWindowHandles();
+            Iterator<String> iterator = allWindowHandles.iterator();
+
+            // Here we will check if child window has other child windows and will fetch the heading of the child window
+            while (iterator.hasNext()) {
+                String ChildWindow = iterator.next();
+                if (!mainWindowHandle.equalsIgnoreCase(ChildWindow)) {
+                    driver.switchTo().window(ChildWindow);
+                    WebElement text = driver.findElement(By.id("sampleHeading"));
+                    System.out.println("Heading of child window is " + text.getText());
+                }
+            }
+
+            // Switching to Parent window that is Main Window.
+            driver.switchTo().window(mainWindowHandle);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Popup handling
+     */
+    public void popupHandling() {
+        try {
+            WebDriverManager.firefoxdriver().setup();
+            driver = new FirefoxDriver();
+            driver.manage().window().maximize();
+            driver.get("https://demo.guru99.com/test/delete_customer.php");
+            driver.manage().window().maximize();
+            driver.findElement(By.name("cusid")).sendKeys("53920");
+            driver.findElement(By.name("submit")).submit();
+
+            // Switching to Alert
+            Alert alert = driver.switchTo().alert();
+
+            // Capturing alert message.
+            String alertMessage= driver.switchTo().alert().getText();
+
+            // Displaying alert message
+            System.out.println(alertMessage);
+            Thread.sleep(5000);
+
+            // Accepting alert
+            alert.accept();
+
+            // Rejecting alert
+            //alert.dismiss();
+
+        }catch(Exception e){
+           e.printStackTrace();
+        }
+    }
 
     /**
      * File upload or windows element handling using Autoit
@@ -326,6 +419,61 @@ public class MethodRepository {
     /**
      * Data driven testing using excel poi jar
      */
+    public void dataDrivenExcel() throws IOException, InterruptedException {
+            File file = new File("./testdata/testdataexcel.xlsx");
+            FileInputStream inputStream = new FileInputStream(file);
+            XSSFWorkbook wb = new XSSFWorkbook(inputStream);
+            XSSFSheet sheet = wb.getSheet("Login");
+
+            XSSFRow row = null;
+            XSSFCell cell = null;
+            String username = null;
+            String password = null;
+
+            /* Navigate through the rows*/
+            for(int i=1; i<=sheet.getLastRowNum(); i++){
+                row = sheet.getRow(i);
+                /* Navigate through the columns */
+                for(int j=0;j<row.getLastCellNum(); j++){
+                    cell = row.getCell(j);
+                    if (j==0){
+                        username = cell.getStringCellValue();
+                    }
+                    if(j==1){
+                        password = cell.getStringCellValue();
+                    }
+                }
+                Thread.sleep(2000);
+                driver.findElement(By.id("email")).clear();
+                driver.findElement(By.id("email")).sendKeys(username);
+                driver.findElement(By.id("passwd")).clear();
+                driver.findElement(By.id("passwd")).sendKeys(password);
+                driver.findElement(By.id("SubmitLogin")).click();
+                Thread.sleep(6000);
+                String result = null;
+
+                try{
+                    Boolean isLoggedIn = driver.findElement(By.xpath("//*[@title='Log me out']")).isDisplayed();
+                    if(isLoggedIn==true)
+                    {
+                        result="PASS";
+                    }
+                    System.out.println("Username: " + username + " -----> " + "Password: " + password + " -----> Login Success? " + result );
+                    driver.findElement(By.xpath("//*[@title='Log me out']")).click();
+                    Thread.sleep(3000);
+                }catch(Exception e){
+                    Boolean isError = driver.findElement(By.xpath("//*[@id='center_column']/div[1]")).isDisplayed();
+                    if(isError==true)
+                    {
+                        result="FAIL";
+                    }
+                    System.out.println("Username: " + username + " -----> " + "Password: " + password + " -----> Login Success? " + result );
+                    Thread.sleep(3000);
+                }
+                driver.findElement(By.id("SubmitLogin")).click();
+            }
+
+    }
 
     /**
      * Broken image handling
@@ -335,15 +483,30 @@ public class MethodRepository {
     /**
      * Use of javascript-executor if send keys method will not work
      */
+    public void sendKeysWithJavaScriptExecutor(){
+        try {
+            WebElement btnSignInNavBar = driver.findElement(By.xpath("//a[@class='login']"));
+            btnSignInNavBar.click();
+            Thread.sleep(5000);
 
-    /**
-     * Popup handling
-     */
+            JavascriptExecutor jse = (JavascriptExecutor) driver;
+            jse.executeScript("document.getElementById('email').setAttribute('value', 'subhendudas8014@lexmark.com')");
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
 
 
 
-    public void closeBrowser(){
+
+
+    public void closeAllBrowser(){
+        driver.quit();
+    }
+
+    public void closeCurrentBrowser(){
         driver.close();
     }
 
